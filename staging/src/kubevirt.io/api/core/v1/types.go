@@ -266,6 +266,11 @@ type TopologyHints struct {
 type VirtualMachineInstanceStatus struct {
 	// NodeName is the name where the VirtualMachineInstance is currently running.
 	NodeName string `json:"nodeName,omitempty"`
+	// PodIP is the IP address of the virt-launcher pod backing the VirtualMachineInstance,
+	// as reported by the pod status. Unlike the guest interface IPs reported in interfaces,
+	// it is always routable from the pod network.
+	// +optional
+	PodIP string `json:"podIP,omitempty"`
 	// A brief CamelCase message indicating details about why the VMI is in this state. e.g. 'NodeUnresponsive'
 	// +optional
 	Reason string `json:"reason,omitempty"`

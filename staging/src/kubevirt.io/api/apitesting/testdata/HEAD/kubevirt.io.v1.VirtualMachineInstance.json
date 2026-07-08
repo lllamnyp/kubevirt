@@ -937,6 +937,7 @@
   },
   "status": {
     "nodeName": "nodeNameValue",
+    "podIP": "podIPValue",
     "reason": "reasonValue",
     "conditions": [
       {

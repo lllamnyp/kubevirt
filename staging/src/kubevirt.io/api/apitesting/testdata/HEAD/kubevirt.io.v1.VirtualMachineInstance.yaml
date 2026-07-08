@@ -805,6 +805,7 @@ status:
   phaseTransitionTimestamps:
   - phase: phaseValue
     phaseTransitionTimestamp: "1976-01-01T01:01:01Z"
+  podIP: podIPValue
   qosClass: qosClassValue
   reason: reasonValue
   runtimeUser: 18446744073709551605

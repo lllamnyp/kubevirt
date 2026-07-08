@@ -424,6 +424,7 @@ func (c *Controller) updateStatus(vmi *virtv1.VirtualMachineInstance, pod *k8sv1
 				}
 				vmiCopy.ObjectMeta.Labels[virtv1.NodeNameLabel] = pod.Spec.NodeName
 				vmiCopy.Status.NodeName = pod.Spec.NodeName
+				vmiCopy.Status.PodIP = pod.Status.PodIP
 
 				// Set the VMI migration transport now before the VMI can be migrated
 				// This status field is needed to support the migration of legacy virt-launchers
@@ -497,6 +498,12 @@ func (c *Controller) updateStatus(vmi *virtv1.VirtualMachineInstance, pod *k8sv1
 		// Network
 		if err := c.updateNetworkStatus(vmiCopy, pod); err != nil {
 			log.Log.Errorf("failed to update the interface status: %v", err)
+		}
+
+		// Keep the pod IP in sync with the current virt-launcher pod, which
+		// changes when the VMI is migrated.
+		if pod.Status.PodIP != "" {
+			vmiCopy.Status.PodIP = pod.Status.PodIP
 		}
 
 		if c.requireCPUHotplug(vmiCopy) {

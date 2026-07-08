@@ -69,6 +69,7 @@ func (VirtualMachineInstanceStatus) SwaggerDoc() map[string]string {
 	return map[string]string{
 		"":                              "VirtualMachineInstanceStatus represents information about the status of a VirtualMachineInstance. Status may trail the actual\nstate of a system.",
 		"nodeName":                      "NodeName is the name where the VirtualMachineInstance is currently running.",
+		"podIP":                         "PodIP is the IP address of the virt-launcher pod backing the VirtualMachineInstance,\nas reported by the pod status. Unlike the guest interface IPs reported in interfaces,\nit is always routable from the pod network.\n+optional",
 		"reason":                        "A brief CamelCase message indicating details about why the VMI is in this state. e.g. 'NodeUnresponsive'\n+optional",
 		"conditions":                    "Conditions are specific points in VirtualMachineInstance's pod runtime.",
 		"phase":                         "Phase is the status of the VirtualMachineInstance in kubernetes world. It is not the VirtualMachineInstance status, but partially correlates to it.",

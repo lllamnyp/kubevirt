@@ -15925,6 +15925,12 @@ var CRDsValidation map[string]string = map[string]string{
             type: object
           type: array
           x-kubernetes-list-type: atomic
+        podIP:
+          description: |-
+            PodIP is the IP address of the virt-launcher pod backing the VirtualMachineInstance,
+            as reported by the pod status. Unlike the guest interface IPs reported in interfaces,
+            it is always routable from the pod network.
+          type: string
         qosClass:
           description: |-
             The Quality of Service (QOS) classification assigned to the virtual machine instance based on resource requirements

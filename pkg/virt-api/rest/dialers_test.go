@@ -70,12 +70,12 @@ var _ = Describe("NetDialer", func() {
 		}
 	}
 
-	It("Should fail if vmi has no network interfaces", func() {
+	It("Should fail if vmi has no pod IP and no network interfaces", func() {
 		dialer := netDial{
 			request: request,
 		}
 		_, statusErr := dialer.DialUnderlying(makeVMIWithInterfaceStatus(nil))
-		Expect(statusErr.Status().Message).To(Equal("no network interfaces are present"))
+		Expect(statusErr.Status().Message).To(Equal("no pod IP or network interfaces are present"))
 	})
 
 	It("Should fail if request has no port", func() {
@@ -150,4 +150,26 @@ var _ = Describe("NetDialer", func() {
 		Entry("with ipv4 ip address", "127.0.0.1"),
 		Entry("with ipv6 ip address", "[::1]"),
 	)
+
+	It("Should prefer the pod IP over the guest interface IP", func() {
+		ln, err := net.Listen("tcp", "127.0.0.1:0")
+		Expect(err).NotTo(HaveOccurred())
+		defer ln.Close()
+		tcpAddr := ln.Addr().(*net.TCPAddr)
+
+		request.PathParameters()["port"] = strconv.FormatInt(int64(tcpAddr.Port), 10)
+		dialer := netDial{
+			request: request,
+		}
+		vmi := makeVMIWithInterfaceStatus([]v1.VirtualMachineInstanceNetworkInterface{
+			{
+				// Not routable, dialing it would fail
+				IP: "192.0.2.1",
+			},
+		})
+		vmi.Status.PodIP = tcpAddr.IP.String()
+		conn, statusErr := dialer.DialUnderlying(vmi)
+		Expect(statusErr).NotTo(HaveOccurred())
+		Expect(conn).NotTo(BeNil())
+	})
 })

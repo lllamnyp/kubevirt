@@ -74,7 +74,7 @@ func (n netDial) Dial(vmi *v1.VirtualMachineInstance) (*websocket.Conn, *k8serro
 func (n netDial) DialUnderlying(vmi *v1.VirtualMachineInstance) (net.Conn, *k8serrors.StatusError) {
 	logger := log.Log.Object(vmi)
 
-	targetIP, err := getTargetInterfaceIP(vmi)
+	targetIP, err := getTargetIP(vmi)
 	if err != nil {
 		logger.Reason(err).Error("Can't establish TCP tunnel.")
 		return nil, k8serrors.NewBadRequest(err.Error())
@@ -131,12 +131,17 @@ func (app *SubresourceAPIApp) getVirtHandlerConnForVMI(vmi *v1.VirtualMachineIns
 	return kubecli.NewVirtHandlerClient(app.virtCli, app.handlerHttpClient).Port(app.consoleServerPort).ForNode(vmi.Status.NodeName), nil
 }
 
-// get the first available interface IP
-// if no interface is present, return error
-func getTargetInterfaceIP(vmi *v1.VirtualMachineInstance) (string, error) {
+// getTargetIP returns the IP to dial to reach the VMI: the virt-launcher pod IP
+// when known, falling back to the first available interface IP. The guest
+// interface IP may not be routable from the pod network (e.g. when the VM is
+// attached to a VPC network), while the pod IP always is.
+func getTargetIP(vmi *v1.VirtualMachineInstance) (string, error) {
+	if vmi.Status.PodIP != "" {
+		return vmi.Status.PodIP, nil
+	}
 	interfaces := vmi.Status.Interfaces
 	if len(interfaces) < 1 {
-		return "", fmt.Errorf("no network interfaces are present")
+		return "", fmt.Errorf("no pod IP or network interfaces are present")
 	}
 	return interfaces[0].IP, nil
 }

@@ -29474,6 +29474,13 @@ func schema_kubevirtio_api_core_v1_VirtualMachineInstanceStatus(ref common.Refer
 							Format:      "",
 						},
 					},
+					"podIP": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodIP is the IP address of the virt-launcher pod backing the VirtualMachineInstance, as reported by the pod status. Unlike the guest interface IPs reported in interfaces, it is always routable from the pod network.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"reason": {
 						SchemaProps: spec.SchemaProps{
 							Description: "A brief CamelCase message indicating details about why the VMI is in this state. e.g. 'NodeUnresponsive'",
