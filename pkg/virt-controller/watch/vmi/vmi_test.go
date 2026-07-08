@@ -1936,6 +1936,24 @@ var _ = Describe("VirtualMachineInstance watcher", func() {
 			Expect(updatedVmi.Status.LauncherContainerImageVersion).To(BeEquivalentTo("a"))
 			Expect(updatedVmi.Labels).To(BeEmpty())
 		})
+		It("should set the pod IP on the VMI when it is in running state", func() {
+			vmi := newPendingVirtualMachine("testvmi")
+			setReadyCondition(vmi, k8sv1.ConditionTrue, "")
+			vmi.Status.Phase = virtv1.Running
+			pod := newPodForVirtualMachine(vmi, k8sv1.PodRunning)
+			pod.Status.Conditions = append(pod.Status.Conditions, k8sv1.PodCondition{Type: k8sv1.PodReady, Status: k8sv1.ConditionTrue})
+			pod.Status.PodIP = "10.244.1.35"
+
+			addVirtualMachine(vmi)
+			addActivePods(vmi, pod.UID, "")
+			addPod(pod)
+
+			sanityExecute()
+
+			updatedVmi, err := virtClientset.KubevirtV1().VirtualMachineInstances(vmi.Namespace).Get(context.Background(), vmi.Name, metav1.GetOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(updatedVmi.Status.PodIP).To(Equal("10.244.1.35"))
+		})
 
 		It("should add a ready condition if it is present on the pod and the VMI is in running state", func() {
 			vmi := newPendingVirtualMachine("testvmi")

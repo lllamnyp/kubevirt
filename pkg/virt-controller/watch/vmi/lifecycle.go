@@ -685,6 +685,18 @@ func prepareVMIPatch(oldVMI, newVMI *virtv1.VirtualMachineInstance) *patch.Patch
 		}
 	}
 
+	if newVMI.Status.PodIP != oldVMI.Status.PodIP {
+		if oldVMI.Status.PodIP == "" {
+			patchSet.AddOption(patch.WithAdd("/status/podIP", newVMI.Status.PodIP))
+		} else {
+			patchSet.AddOption(
+				patch.WithTest("/status/podIP", oldVMI.Status.PodIP),
+				patch.WithReplace("/status/podIP", newVMI.Status.PodIP),
+			)
+		}
+		log.Log.V(3).Object(oldVMI).Infof("Patching VMI podIP")
+	}
+
 	if !equality.Semantic.DeepEqual(oldVMI.Labels, newVMI.Labels) {
 		if oldVMI.Labels == nil {
 			patchSet.AddOption(patch.WithAdd("/metadata/labels", newVMI.Labels))
